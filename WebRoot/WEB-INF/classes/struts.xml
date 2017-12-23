@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+    <constant name="struts.enable.DynamicMethodInvocation" value="false" />
+    <!-- 配置修改struts.xml后不需要进行修改 -->
+    <constant name="struts.devMode" value="true" />
+    <!-- 允许action的名字中出现"/" -->
+    <constant name="struts.enable.SlashesInActionNames" value="true" />
+	<package name="custom-default" namespace="/" extends="struts-default">
+	<!-- 此处的class代表的是@Component("/json/YuanliaoAction")
+@Scope("prototype")，不是class的真正物理路径 -->
+		<action name="*/*" class="/front/{1}Action" method="{2}">
+			<result name="success">/jsp/front/{1}/{2}.jsp</result>
+			<result name="none" type="redirectAction">${url}</result>
+			<result name="excel" type="stream">
+			    <param name="contentType">application/vnd.ms-excel</param>
+			    <param name="contentDisposition">attachment;filename="Perdiet.xls"</param>
+			    <param name="inputName">excelFile</param>
+			</result>
+			<result name="other">/jsp/front/Caipu/theList_gl.jsp</result>
+			<result name="shanchu">/jsp/front/Caipu/list.jsp</result>
+			<result name="caipuWestRecognize">/jsp/front/Caipu/caipuWestRecognize.jsp</result>
+			<result name="input">/jsp/front/Caipu/list.jsp</result>
+			<!-- 中医和西医都放在了同一个页面 -->
+			<result name="tcmCaipuSearch">/jsp/front/Caipu/search.jsp</result>
+			<result name="tcmCaipuCompare">/jsp/front/Caipu/compare.jsp</result>
+			<result name="tcmPerdietSearch">/jsp/front/Perdiet/search.jsp</result>
+			<result name="tcmPerdietCompare">/jsp/front/Perdiet/compare.jsp</result>
+			<result name="tcmCaipuRecognize">/jsp/front/TcmCaipu/tcmCaipuRecognize.jsp</result>
+		</action>
+    </package>
+    <!-- 其中package的名字name属性是唯一标识，namespace是前台ajax获取后台时在action的name之前必须交上的内容，否则找不到
+    action的class是包名/类名，method是要指定要执行的方法，
+    result的名字是与后台action中返回的名字相同，其中他的类型必须是json类型，若其中没有包括路径，则表示返回原页面
+    json是一种传输数据的方式
+     -->
+    <package name="ajax" namespace="/json"  extends="json-default">  
+    	<action name="searchYuanliao" class="/json/YuanliaoAction" method="search">  
+         	<result name="json" type="json"></result>
+   		</action> 
+   		<action name="searchTcmYuanliao" class="/json/TcmYuanliaoAction" method="search">  
+         	<result name="json" type="json"></result>
+   		</action> 
+   		<action name="tuijieYuanliao" class="/json/TuijieAction" method="search_">  
+         	<!-- 将action中的bean属性以json字符串的形式返回给页面，若又不想返回给页面的可以通过@JSON(serialize = false)来去除 -->
+         	<result name="json" type="json"></result>
+   		</action> 
+   		<action name="testJson" class="/json/jsonTestAction" method="jsonConvert">
+   			<result name="json" type="json">
+   				 <param name="root">result</param>
+   			</result>
+   		</action>              
+	</package> 
+</struts>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx" 
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:task="http://www.springframework.org/schema/task" 
+	xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd 
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd 
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd 
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd"> -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+                        http://www.springframework.org/schema/aop    
+                          http://www.springframework.org/schema/aop/spring-aop-3.1.xsd  
+                          http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.1.xsd 
+                         http://www.springframework.org/schema/tx    
+                          http://www.springframework.org/schema/tx/spring-tx-3.1.xsd ">
+	<context:annotation-config />
+	<context:component-scan base-package="com.ustb" />
+	<!-- 表示与hibernate结合 -->
+	<bean id="myDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/foods" />
+		<property name="username" value="root" />
+		<property name="password" value="" />
+		<!-- 连接池启动时的初始值 -->
+		<!--<property name="initialSize" value="30"/> -->
+		<!-- 连接池的最大值 -->
+		<!--<property name="maxActive" value="500"/> -->
+		<!-- 最大空闲值.当经过一个高峰时间后，连接池可以慢慢将已经用不到的连接慢慢释放一部分，一直减少到maxIdle为止 -->
+		<!--<property name="maxIdle" value="2"/> -->
+		<!-- 最小空闲值.当空闲的连接数少于阀值时，连接池就会预申请去一些连接，以免洪峰来时来不及申请 -->
+		<!--<property name="minIdle" value="1"/> -->
+	</bean>
+	<!-- 表示与hibernate结合 -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="myDataSource" />
+		<property name="packagesToScan">
+			<list>
+				<value>com.ustb.food.*</value>
+				<value>com.ustb.food.entity</value>
+			</list>
+		</property>
+	
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="javax.persistence.validation.mode">none</prop>
+				<prop key="hibernate.show_sql">true</prop>
+			</props>
+		</property>
+	</bean>
+	<!-- 声明一个事物管理 -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	<!-- 对事物管理进行配置，说明在哪些包下进行事物管理 -->
+	<aop:config>
+		<aop:pointcut id="productServiceMethods"
+			expression="execution(* com.ustb.food.service..*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="productServiceMethods" />
+	</aop:config>
+	<!-- 对事物管理进行配置，对哪些方法进行事物 管理 -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<!-- propagation="REQUIRED"表示支持当前事务，如果当前没有事务，就新建一个事务。这是最常见的选择。 -->
+			<tx:method name="save*" propagation="REQUIRED" />
+			<tx:method name="add*" propagation="REQUIRED" />
+			<tx:method name="create*" propagation="REQUIRED" />
+			<tx:method name="insert*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED" />
+			<tx:method name="merge*" propagation="REQUIRED" />
+			<tx:method name="del*" propagation="REQUIRED" />
+			<tx:method name="remove*" propagation="REQUIRED" />
+			<tx:method name="put*" propagation="REQUIRED" />
+			<tx:method name="use*" propagation="REQUIRED" />
+			<!-- hibernate4必须配置为开启事务 否则 getCurrentSession()获取不到 -->
+			<tx:method name="check*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="get*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="count*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="find*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="list*" propagation="REQUIRED" read-only="true" />
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+
+</beans>
